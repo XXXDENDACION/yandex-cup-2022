@@ -1,0 +1,180 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Эмуляция тачскрина</title>
+    <style>
+        :root {
+            --cursor: url('https://pictures.s3.yandex.net/mobile/touch-cursor.png');
+            --cursor-2x: url('https://pictures.s3.yandex.net/mobile/touch-cursor@2x.png');
+            --cursor-image-set: var(--cursor) 1x, var(--cursor-2x) 2x;
+        }
+
+        html, body {
+            font-family: sans-serif;
+        }
+
+        * {
+            cursor: var(--cursor) 12 12, auto !important;
+            cursor: image-set(var(--cursor-image-set)) 12 12, auto !important;
+            cursor: -webkit-image-set(var(--cursor-image-set)) 12 12, auto !important;
+        }
+
+        .scrollable-container {
+            width: 400px;
+            height: 400px;
+            border: 1px solid #f00;
+
+            overflow: auto;
+        }
+
+        .table {
+            width: auto;
+
+            border: none;
+            border-collapse: collapse;
+        }
+
+        .table:hover {
+            background-color: #848484;
+        }
+
+        .table:active {
+            background-color: #861a1a;
+        }
+
+        .table__cell {
+            min-width: 60px;
+            height: 60px;
+
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .table__cell:hover {
+            background-color: #c0c0c0;
+        }
+
+        .table__cell:active {
+            background-color: #b93434;
+        }
+    </style>
+</head>
+<body>
+<div class="scrollable-container">
+    <table class="scrollable-container__content table"></table>
+</div>
+<script>
+    const table = document.getElementsByClassName('table').item(0);
+    let tr = document.createElement('tr');
+
+    for (let i = 0; i < 100; i++) {
+        if (i % 10 === 0) {
+            table.appendChild(tr);
+
+            tr = document.createElement('tr');
+        }
+
+        const td = document.createElement('td');
+
+        td.classList.add('table__cell');
+        td.innerText = `${i}`;
+
+        tr.appendChild(td);
+    }
+
+    table.appendChild(tr);
+</script>
+
+<script>
+    <!-- Код решения будет выполнен здесь -->
+    let isPress = false;
+    let startX;
+    let startY;
+    let scrollLeft;
+    let scrollTop;
+    const mainTable = document.getElementsByClassName('table').item(0);
+    const container = document.getElementsByClassName('scrollable-container').item(0);
+    const cells = document.querySelectorAll('.table__cell');
+
+    resetTablePseudoClasses();
+
+    for (const cell of cells) {
+        resetCellPseudoClasses(cell);
+    }
+
+    container.addEventListener('mousemove', (e) => {
+        const destinationEl = document.elementFromPoint(e.clientX, e.clientY);
+        if (destinationEl.tagName === 'TD') {
+            destinationEl.addEventListener('mousedown', (e) => {
+                setTimeout(() => {
+                    changeBackgroundColor(destinationEl, '#b93434');
+                }, 250)
+            });
+
+            destinationEl.addEventListener('mousemove', (e) => {
+                if (!isPress) return;
+                changeBackgroundColor(destinationEl, '#c0c0c0');
+                setTimeout(() => {
+                    changeBackgroundColor(destinationEl, '#b93434');
+                }, 250)
+            })
+
+            destinationEl.addEventListener('mouseup', (e) => {
+                changeBackgroundColor(destinationEl, '#b93434');
+            })
+
+            destinationEl.addEventListener('mouseout', (e) => {
+                changeBackgroundColor(destinationEl, 'transparent');
+            })
+        }
+    });
+
+    container.addEventListener('mousedown', (e) => {
+        isPress = true;
+        startX = e.pageX - container.offsetLeft;
+        startY = e.pageY - container.offsetTop;
+        scrollLeft = container.scrollLeft;
+        scrollTop = container.scrollTop;
+        console.log("@#@", e.pageX);
+    })
+
+    container.addEventListener('mousemove', (e) => {
+        if(!isPress) return;
+        const endX = e.pageX - container.offsetLeft;
+        const endY = e.pageY - container.offsetTop;
+        const diffX = endX - startX;
+        const diffY = endY - startY;
+        container.scrollLeft = scrollLeft - diffX;
+        container.scrollTop = scrollTop - diffY;
+    })
+
+    container.addEventListener('mouseup', (e) => {
+        isPress = false;
+    })
+
+    container.addEventListener('mouseout', (e) => {
+        isPress = false;
+    })
+
+    function changeBackgroundColor(cell, color) {
+        cell.style.backgroundColor = color;
+    }
+
+    function resetTablePseudoClasses() {
+        mainTable.classList.remove('table');
+        mainTable.style.width = 'auto';
+        mainTable.style.border = 'none';
+        mainTable.style.borderCollapse = 'collapse';
+    }
+
+    function resetCellPseudoClasses(cell) {
+        cell.classList.remove('table__cell');
+        cell.style.minWidth = '60px';
+        cell.style.height = '60px';
+        cell.style.textAlign = 'center';
+        cell.style.verticalAlign = 'middle';
+    }
+</script>
+
+</body>
+</html>
